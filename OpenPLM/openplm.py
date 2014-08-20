@@ -154,7 +154,7 @@ class OpenPLMPluginInstance(object):
             path_stp=os.path.join(rep, (fileName+".stp")).encode("utf-8")
             #create temporal file stp
             Part.export(gdoc.Objects, path_stp)
-            gdoc.FileName = path
+            gdoc.saveAs(path)
             save(gdoc)
 
             #upload stp and freecad object
@@ -1106,14 +1106,14 @@ class OpenPLMCreate:
 
 FreeCADGui.addCommand('OpenPLM_Create', OpenPLMCreate())
 
-def build_menu():
-    win = main_window()
-    mb =  win.menuBar()
-    menu = mb.addMenu("OpenPLM")
-    for cls in (OpenPLMLogin, OpenPLMCheckOut):
-        cmd = cls()
-        action = qt.QAction(cmd.GetResources()["MenuText"], None)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered"), cmd.Activated)
-        menu.addAction(action)
-    menu.show()
+# def build_menu():
+#     win = main_window()
+#     mb =  win.menuBar()
+#     menu = mb.addMenu("OpenPLM")
+#     for cls in (OpenPLMLogin, OpenPLMCheckOut):
+#         cmd = cls()
+#         action = qt.QAction(cmd.GetResources()["MenuText"], None)
+#         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered"), cmd.Activated)
+#         menu.addAction(action)
+#     menu.show()
 
