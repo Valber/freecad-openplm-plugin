@@ -47,6 +47,9 @@ import poster.streaminghttp as shttp
 
 import urllib2
 
+import re
+from operator import truth
+
 
 import PyQt4.QtGui as qt
 from PyQt4 import QtCore
@@ -153,8 +156,28 @@ class OpenPLMPluginInstance(object):
             fileName, fileExtension = os.path.splitext(filename)
             path_stp=os.path.join(rep, (fileName+".stp")).encode("utf-8")
             #create temporal file stp
-            Part.export(gdoc.Objects, path_stp)
-            gdoc.saveAs(path)
+            lines=re.split('\n',gdoc.DependencyGraph)
+            edges=[]
+            for line in lines:
+                if truth(re.match("\A\d+\[label",line) ):
+                    edges.append(re.findall("\A\d+",line)[0])
+                if truth(re.match("\A\d+->\d+",line)):
+                    edges.remove(re.findall("\d+",line)[-1])
+
+            labels=[]
+            for edge in edges:
+                for line in lines:
+                    if  (truth(re.match("\A\d+\[label",line))) and (re.findall("\A\d+",line)[0]==edge):
+                        label=re.split('=',line)[-1]
+                        labels.append(re.sub('];','',label))
+                        continue
+
+            ImportObj=[]
+            for label in labels:
+                ImportObj.append(gdoc.getObjectsByLabel(label)[-1])
+            Part.export(ImportObj, path_stp)
+            
+            gdoc.FileName = path
             save(gdoc)
 
             #upload stp and freecad object
@@ -504,7 +527,8 @@ class Dialog(qt.QDialog):
                 value = value.decode("utf-8")
             entry.setCurrentIndex(choices.index(value or ''))
         elif isinstance(entry, qt.QCheckBox):
-            entry.setChecked(value)
+            pass
+            # entry.setChecked(value)
 
     def field_to_widget(self, field):
         widget = None
