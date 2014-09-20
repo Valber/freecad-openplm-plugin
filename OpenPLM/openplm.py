@@ -177,7 +177,7 @@ class OpenPLMPluginInstance(object):
                 ImportObj.append(gdoc.getObjectsByLabel(label)[-1])
             Part.export(ImportObj, path_stp)
             
-            gdoc.FileName = path
+            gdoc.saveAs(path)
             save(gdoc)
 
             #upload stp and freecad object
