@@ -151,30 +151,27 @@ class OpenPLMPluginInstance(object):
                 # directory already exists, just ignores the exception
                 pass
             gdoc = FreeCAD.ActiveDocument
+            ggui = FreeCAD.Gui.ActiveDocument # for Visibility Checking
             filename = filename.decode("utf8")
             path = os.path.join(rep, filename)
             fileName, fileExtension = os.path.splitext(filename)
             path_stp=os.path.join(rep, (fileName+".stp")).encode("utf-8")
             #create temporal file stp
             lines=re.split('\n',gdoc.DependencyGraph)
-            edges=[]
+            edges={}
             for line in lines:
                 if truth(re.match("\A\d+\[label",line) ):
-                    edges.append(re.findall("\A\d+",line)[0])
-                if truth(re.match("\A\d+->\d+",line)):
-                    edges.remove(re.findall("\d+",line)[-1])
-
-            labels=[]
-            for edge in edges:
-                for line in lines:
-                    if  (truth(re.match("\A\d+\[label",line))) and (re.findall("\A\d+",line)[0]==edge):
-                        label=re.split('=',line)[-1]
-                        labels.append(re.sub('];','',label))
-                        continue
-
+                    labeln=re.sub('];','',re.split('=',line)[-1])
+                    labeln=re.sub('"','',labeln) # UTF-8 national labels
+                    current_object=gdoc.getObjectsByLabel(labeln)[0]
+                    if "Group" in current_object.PropertiesList:
+                        pass
+                    else:
+                        if ggui.getObject(current_object.Name).Visibility:
+                            edges[re.findall("\A\d+",line)[0]]= labeln # Append graph nodes
             ImportObj=[]
-            for label in labels:
-                ImportObj.append(gdoc.getObjectsByLabel(label)[-1])
+            for ind in edges.keys():
+                ImportObj.append(gdoc.getObjectsByLabel(edges[ind])[0])
             Part.export(ImportObj, path_stp)
             
             gdoc.saveAs(path)
